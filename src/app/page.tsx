@@ -22,9 +22,10 @@ export default function Home() {
             Scripture preparation
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-stone-700">
-            One passage each week—Head, Heart, and Hands—to get ready for Tuesday
-            Bible study and Sunday. Calm, text-centered, and shared across the
-            church.
+            One passage each week—Head, Heart, and Hands—in a{" "}
+            <span className="text-stone-900">simple step-by-step path</span> so you
+            can show up to <span className="font-medium text-stone-900">Tuesday night Bible study</span>{" "}
+            ready. Calm, text-centered, shared across the church.
           </p>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
             <Link

@@ -2,61 +2,33 @@
 
 import Link from "next/link"
 import { ExternalLink } from "lucide-react"
-import {
-  startTransition,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react"
+import { useState } from "react"
 import type { WeeklyGuide } from "@/lib/weekly-guides"
 import { bibleGatewayReadUrl } from "@/lib/bible-external-link"
-import {
-  getJournal,
-  saveJournal,
-  type PrepareJournal,
-} from "@/lib/prepare-notes-storage"
 import { PromptBlock } from "@/components/prepare/prompt-block"
-import { PrepareSectionNav, type SectionLink } from "@/components/prepare/prepare-section-nav"
+import {
+  PrepareSectionNav,
+  type SectionLink,
+} from "@/components/prepare/prepare-section-nav"
 import { PrepareJournalFields } from "@/components/prepare/prepare-journal-fields"
 import { PrepareJournalDock } from "@/components/prepare/prepare-journal-sheet"
+import { usePrepareJournal } from "@/hooks/use-prepare-journal"
 import { cn } from "@/lib/utils"
 
 export function WeeklyPrepareView({
   guide,
   isCurrentWeek = false,
+  flowPath,
 }: {
   guide: WeeklyGuide
   isCurrentWeek?: boolean
+  /** Link back to the guided step flow (e.g. `/prepare/[slug]`). */
+  flowPath?: string
 }) {
   const weekLabel = formatWeekLabel(guide.week_start_date)
   const readUrl = bibleGatewayReadUrl(guide.scripture_reference)
   const [journalOpen, setJournalOpen] = useState(false)
-  const [journal, setJournal] = useState<PrepareJournal>({
-    prayer: "",
-    reflection: "",
-  })
-  const skipSave = useRef(true)
-
-  useEffect(() => {
-    skipSave.current = true
-    startTransition(() => {
-      setJournal(getJournal(guide.slug))
-    })
-  }, [guide.slug])
-
-  useEffect(() => {
-    if (skipSave.current) {
-      skipSave.current = false
-      return
-    }
-    const t = window.setTimeout(() => saveJournal(guide.slug, journal), 450)
-    return () => window.clearTimeout(t)
-  }, [guide.slug, journal])
-
-  const setJournalSafe = useCallback((next: PrepareJournal) => {
-    setJournal(next)
-  }, [])
+  const { journal, setJournal: setJournalSafe } = usePrepareJournal(guide.slug)
 
   const navSections: SectionLink[] = [
     { id: "prepare-passage", label: "Passage" },
@@ -73,7 +45,23 @@ export function WeeklyPrepareView({
     <>
       <PrepareSectionNav sections={navSections} />
 
-      <article className="relative mx-auto max-w-2xl px-5 pb-28 pt-8 lg:pb-20">
+      {flowPath ? (
+        <div className="mx-auto max-w-2xl px-5 pt-4">
+          <Link
+            href={flowPath}
+            className="inline-flex text-sm font-medium text-amber-950 underline-offset-4 hover:underline"
+          >
+            ← Guided path (one step at a time)
+          </Link>
+        </div>
+      ) : null}
+
+      <article
+        className={cn(
+          "relative mx-auto max-w-2xl px-5 pb-28 pt-8 lg:pb-20",
+          flowPath && "pt-6"
+        )}
+      >
         <p className="text-xs font-medium uppercase tracking-[0.2em] text-stone-500">
           {isCurrentWeek ? "This week · Journey Baptist" : "Archive · Journey Baptist"}
         </p>
@@ -177,8 +165,9 @@ export function WeeklyPrepareView({
             browser.
           </p>
           <p className="mt-2 text-sm text-stone-600 lg:hidden">
-            Tap the floating <span className="font-medium text-stone-800">Journal</span>{" "}
-            button to write on your phone.
+            Tap the floating{" "}
+            <span className="font-medium text-stone-800">Journal</span> button to
+            write on your phone.
           </p>
 
           <div className="mt-8 hidden lg:block">

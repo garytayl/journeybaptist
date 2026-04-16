@@ -5,12 +5,14 @@ import {
   getGuideBySlug,
   getPublishedGuidesSorted,
 } from "@/lib/weekly-guides"
-import { WeeklyGuidePage } from "@/components/prepare/weekly-guide-page"
+import { WeeklyPrepareView } from "@/components/prepare/weekly-prepare-view"
 
 type Props = { params: Promise<{ slug: string }> }
 
 export function generateStaticParams() {
-  return getPublishedGuidesSorted().map((g) => ({ slug: g.slug }))
+  return getPublishedGuidesSorted().map((g) => ({
+    slug: g.slug,
+  }))
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -20,12 +22,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "Guide" }
   }
   return {
-    title: `${guide.title} · Journey Baptist`,
-    description: guide.intro ?? `${guide.scripture_reference} — Head, Heart, and Hands.`,
+    title: `Full page · ${guide.title}`,
+    description: `${guide.scripture_reference} — full scroll view.`,
   }
 }
 
-export default async function PrepareGuidePage({ params }: Props) {
+export default async function PrepareGuideReadPage({ params }: Props) {
   const { slug } = await params
   const guide = getGuideBySlug(slug)
   if (!guide || guide.status !== "published") notFound()
@@ -34,10 +36,10 @@ export default async function PrepareGuidePage({ params }: Props) {
   const isCurrentWeek = current?.slug === guide.slug
 
   return (
-    <WeeklyGuidePage
+    <WeeklyPrepareView
       guide={guide}
       isCurrentWeek={isCurrentWeek}
-      readPath={`/prepare/${guide.slug}/read`}
+      flowPath={`/prepare/${slug}`}
     />
   )
 }

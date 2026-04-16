@@ -1,12 +1,20 @@
 import type { WeeklyGuide } from "@/lib/weekly-guides"
-import { WeeklyPrepareView } from "@/components/prepare/weekly-prepare-view"
+import { PrepareStepFlow } from "@/components/prepare/prepare-step-flow"
 
 export function WeeklyGuidePage({
   guide,
   isCurrentWeek = false,
+  readPath,
 }: {
   guide: WeeklyGuide
   isCurrentWeek?: boolean
+  readPath: string
 }) {
-  return <WeeklyPrepareView guide={guide} isCurrentWeek={isCurrentWeek} />
+  return (
+    <PrepareStepFlow
+      guide={guide}
+      isCurrentWeek={isCurrentWeek}
+      readPath={readPath}
+    />
+  )
 }

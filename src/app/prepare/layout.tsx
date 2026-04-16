@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 import type { Metadata } from "next"
-import { SiteHeader } from "@/components/prepare/site-header"
+import { PrepareChrome } from "./prepare-chrome"
 
 export const metadata: Metadata = {
   title: "Weekly Scripture preparation · Journey Baptist",
@@ -11,8 +11,7 @@ export const metadata: Metadata = {
 export default function PrepareLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-[#f6f3ee] text-stone-900">
-      <SiteHeader />
-      {children}
+      <PrepareChrome>{children}</PrepareChrome>
     </div>
   )
 }
