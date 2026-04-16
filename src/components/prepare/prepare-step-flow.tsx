@@ -5,7 +5,9 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
 import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react"
 import type { WeeklyGuide } from "@/lib/weekly-guides"
+import type { PrepareHhhData } from "@/lib/prepare-hhh-storage"
 import { bibleGatewayReadUrl } from "@/lib/bible-external-link"
+import { PrepareSummaryContent } from "@/components/prepare/prepare-summary-content"
 import {
   buildPrepareFlowSteps,
   type FlowStep,
@@ -122,8 +124,10 @@ export function PrepareStepFlow({
               weekLabel={weekLabel}
               readUrl={readUrl}
               readPath={readPath}
+              summaryPath={`/prepare/${guide.slug}/summary`}
               journal={journal}
               setJournal={setJournal}
+              hhhData={hhh}
               promptReplies={hhh.prompts}
               setPromptReply={setPromptReply}
             />
@@ -179,8 +183,10 @@ function StepBody({
   weekLabel,
   readUrl,
   readPath,
+  summaryPath,
   journal,
   setJournal,
+  hhhData,
   promptReplies,
   setPromptReply,
 }: {
@@ -189,8 +195,10 @@ function StepBody({
   weekLabel: string
   readUrl: string
   readPath: string
+  summaryPath: string
   journal: { prayer: string; reflection: string }
   setJournal: (next: { prayer: string; reflection: string }) => void
+  hhhData: PrepareHhhData
   promptReplies: Record<string, string>
   setPromptReply: (stepId: string, text: string) => void
 }) {
@@ -343,6 +351,22 @@ function StepBody({
           </div>
         </div>
       )
+    case "summary":
+      return (
+        <div className="flex min-h-0 flex-1 flex-col">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-stone-500">
+            Compile
+          </p>
+          <h2 className="mt-3 font-serif text-2xl text-stone-900">Everything together</h2>
+          <p className="mt-2 text-sm leading-relaxed text-stone-600">
+            Your Head, Heart, Hands, and journal in one place. Scroll to review
+            before Tuesday.
+          </p>
+          <div className="mt-5 min-h-0 flex-1 overflow-y-auto pr-1 [-webkit-overflow-scrolling:touch]">
+            <PrepareSummaryContent guide={guide} hhh={hhhData} journal={journal} />
+          </div>
+        </div>
+      )
     case "complete":
       return (
         <div className="flex flex-1 flex-col justify-center">
@@ -358,8 +382,14 @@ function StepBody({
           </p>
           <div className="mt-10 flex flex-col gap-3 text-sm">
             <Link
-              href="/prepare"
+              href={summaryPath}
               className="font-medium text-amber-950 underline-offset-4 hover:underline"
+            >
+              Open compiled summary
+            </Link>
+            <Link
+              href="/prepare"
+              className="text-stone-700 underline-offset-4 hover:underline"
             >
               Go to this week
             </Link>

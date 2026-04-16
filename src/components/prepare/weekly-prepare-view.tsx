@@ -210,8 +210,17 @@ export function WeeklyPrepareView({
           </div>
         </section>
 
+        <p className="mt-12 text-center text-sm">
+          <Link
+            href={`/prepare/${guide.slug}/summary`}
+            className="font-medium text-amber-950 underline-offset-4 hover:underline"
+          >
+            View compiled summary
+          </Link>
+        </p>
+
         {!isCurrentWeek ? (
-          <p className="mt-12 text-center text-sm text-stone-600">
+          <p className="mt-8 text-center text-sm text-stone-600">
             <Link
               href="/prepare"
               className="font-medium text-amber-950 underline-offset-4 hover:underline"

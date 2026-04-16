@@ -11,10 +11,10 @@ import { SiteHeader } from "@/components/site-header"
 function shouldHideSiteHeader(pathname: string | null): boolean {
   if (!pathname) return false
   const parts = pathname.split("/").filter(Boolean)
-  if (parts.length !== 2) return false
   if (parts[0] !== "prepare") return false
-  if (parts[1] === "archive") return false
-  return true
+  if (parts.length === 2 && parts[1] !== "archive") return true
+  if (parts.length === 3 && parts[2] === "summary") return true
+  return false
 }
 
 export function PrepareChrome({ children }: { children: ReactNode }) {

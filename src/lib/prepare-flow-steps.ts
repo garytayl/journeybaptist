@@ -19,6 +19,7 @@ export type FlowStep =
     }
   | { id: string; kind: "prayer"; text: string }
   | { id: string; kind: "journal" }
+  | { id: string; kind: "summary" }
   | { id: string; kind: "complete" }
 
 const sectionLabel: Record<"head" | "heart" | "hands", string> = {
@@ -70,6 +71,7 @@ export function buildPrepareFlowSteps(guide: WeeklyGuide): FlowStep[] {
   }
 
   steps.push({ id: "journal", kind: "journal" })
+  steps.push({ id: "summary", kind: "summary" })
   steps.push({ id: "complete", kind: "complete" })
 
   return steps
