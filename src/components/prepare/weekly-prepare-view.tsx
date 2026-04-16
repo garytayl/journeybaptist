@@ -12,6 +12,8 @@ import {
 } from "@/components/prepare/prepare-section-nav"
 import { PrepareJournalFields } from "@/components/prepare/prepare-journal-fields"
 import { PrepareJournalDock } from "@/components/prepare/prepare-journal-sheet"
+import { HhhSectionWriter } from "@/components/prepare/hhh-section-writer"
+import { usePrepareHhh } from "@/hooks/use-prepare-hhh"
 import { usePrepareJournal } from "@/hooks/use-prepare-journal"
 import { cn } from "@/lib/utils"
 
@@ -29,6 +31,7 @@ export function WeeklyPrepareView({
   const readUrl = bibleGatewayReadUrl(guide.scripture_reference)
   const [journalOpen, setJournalOpen] = useState(false)
   const { journal, setJournal: setJournalSafe } = usePrepareJournal(guide.slug)
+  const { data: hhh, setSection } = usePrepareHhh(guide.slug)
 
   const navSections: SectionLink[] = [
     { id: "prepare-passage", label: "Passage" },
@@ -111,21 +114,48 @@ export function WeeklyPrepareView({
         </div>
 
         <div className="mt-14 space-y-14">
-          <PromptBlock
-            anchorId="prepare-head"
-            kind="head"
-            prompts={guide.head_prompts}
-          />
-          <PromptBlock
-            anchorId="prepare-heart"
-            kind="heart"
-            prompts={guide.heart_prompts}
-          />
-          <PromptBlock
-            anchorId="prepare-hands"
-            kind="hands"
-            prompts={guide.hands_prompts}
-          />
+          <div>
+            <PromptBlock
+              anchorId="prepare-head"
+              kind="head"
+              prompts={guide.head_prompts}
+            />
+            <HhhSectionWriter
+              id={`hhh-scroll-head-${guide.slug}`}
+              label="Write your Head"
+              hint="Observe the text—what happened, what stands out, what is God saying here?"
+              value={hhh.sections.head}
+              onChange={(t) => setSection("head", t)}
+            />
+          </div>
+          <div>
+            <PromptBlock
+              anchorId="prepare-heart"
+              kind="heart"
+              prompts={guide.heart_prompts}
+            />
+            <HhhSectionWriter
+              id={`hhh-scroll-heart-${guide.slug}`}
+              label="Write your Heart"
+              hint="Believe and receive—how does this shape your view of God, yourself, others?"
+              value={hhh.sections.heart}
+              onChange={(t) => setSection("heart", t)}
+            />
+          </div>
+          <div>
+            <PromptBlock
+              anchorId="prepare-hands"
+              kind="hands"
+              prompts={guide.hands_prompts}
+            />
+            <HhhSectionWriter
+              id={`hhh-scroll-hands-${guide.slug}`}
+              label="Write your Hands"
+              hint="Respond in faith—obedience, repentance, encouragement, a concrete step."
+              value={hhh.sections.hands}
+              onChange={(t) => setSection("hands", t)}
+            />
+          </div>
         </div>
 
         {guide.prayer ? (

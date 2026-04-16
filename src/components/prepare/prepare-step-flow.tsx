@@ -12,6 +12,7 @@ import {
   sectionTitle,
 } from "@/lib/prepare-flow-steps"
 import { PrepareJournalFields } from "@/components/prepare/prepare-journal-fields"
+import { usePrepareHhh } from "@/hooks/use-prepare-hhh"
 import { usePrepareJournal } from "@/hooks/use-prepare-journal"
 import { cn } from "@/lib/utils"
 
@@ -39,6 +40,7 @@ export function PrepareStepFlow({
   const steps = useMemo(() => buildPrepareFlowSteps(guide), [guide])
   const [index, setIndex] = useState(0)
   const { journal, setJournal } = usePrepareJournal(guide.slug)
+  const { data: hhh, setPromptReply } = usePrepareHhh(guide.slug)
   const readUrl = bibleGatewayReadUrl(guide.scripture_reference)
   const weekLabel = formatWeekLabel(guide.week_start_date)
   const step = steps[index]!
@@ -122,6 +124,8 @@ export function PrepareStepFlow({
               readPath={readPath}
               journal={journal}
               setJournal={setJournal}
+              promptReplies={hhh.prompts}
+              setPromptReply={setPromptReply}
             />
           </motion.div>
         </AnimatePresence>
@@ -177,6 +181,8 @@ function StepBody({
   readPath,
   journal,
   setJournal,
+  promptReplies,
+  setPromptReply,
 }: {
   guide: WeeklyGuide
   step: FlowStep
@@ -185,6 +191,8 @@ function StepBody({
   readPath: string
   journal: { prayer: string; reflection: string }
   setJournal: (next: { prayer: string; reflection: string }) => void
+  promptReplies: Record<string, string>
+  setPromptReply: (stepId: string, text: string) => void
 }) {
   switch (step.kind) {
     case "welcome":
@@ -209,7 +217,10 @@ function StepBody({
             ready to listen, discuss, and pray.
           </p>
           <p className="mt-6 text-sm leading-relaxed text-stone-600">
-            One short step at a time. Tap <span className="font-medium text-stone-800">Next</span>{" "}
+            You will write your <span className="font-medium text-stone-800">Head</span>,{" "}
+            <span className="font-medium text-stone-800">Heart</span>, and{" "}
+            <span className="font-medium text-stone-800">Hands</span> as you go—one
+            screen at a time. Tap <span className="font-medium text-stone-800">Next</span>{" "}
             when you are ready.
           </p>
         </div>
@@ -256,24 +267,45 @@ function StepBody({
           )}
         </div>
       )
-    case "prompt":
+    case "prompt": {
+      const reply = promptReplies[step.id] ?? ""
+      const writeLabel =
+        step.section === "head"
+          ? "Write your Head (observe the text)"
+          : step.section === "heart"
+            ? "Write your Heart (believe and receive)"
+            : "Write your Hands (respond in faith)"
       return (
-        <div className="flex flex-1 flex-col justify-center">
+        <div className="flex min-h-0 flex-1 flex-col">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-amber-900/80">
             {sectionTitle(step.section)}
             {step.sectionTotal > 1
               ? ` · ${step.sectionIndex} of ${step.sectionTotal}`
               : null}
           </p>
-          <h2 className="mt-5 font-serif text-2xl leading-snug text-stone-900">
+          <h2 className="mt-4 font-serif text-2xl leading-snug text-stone-900">
             {step.text}
           </h2>
-          <p className="mt-8 text-sm leading-relaxed text-stone-600">
-            Sit with it. You can jot notes later—just stay with the question for
-            now.
+          <label
+            htmlFor={`hhh-flow-${step.id}`}
+            className="mt-8 text-sm font-medium text-stone-800"
+          >
+            {writeLabel}
+          </label>
+          <p className="mt-1 text-xs text-stone-500">
+            Nothing is uploaded—only stored on this device.
           </p>
+          <textarea
+            id={`hhh-flow-${step.id}`}
+            value={reply}
+            onChange={(e) => setPromptReply(step.id, e.target.value)}
+            rows={8}
+            placeholder="Put it in your own words. Rough notes are fine."
+            className="mt-3 min-h-[10rem] w-full flex-1 resize-y rounded-xl border border-stone-200 bg-white/90 px-4 py-3 text-[1.02rem] leading-relaxed text-stone-800 placeholder:text-stone-400 focus:border-amber-900/30 focus:outline-none focus:ring-2 focus:ring-amber-900/15"
+          />
         </div>
       )
+    }
     case "prayer":
       return (
         <div className="flex min-h-0 flex-1 flex-col justify-center">
@@ -294,10 +326,12 @@ function StepBody({
             Journal
           </p>
           <h2 className="mt-4 font-serif text-2xl text-stone-900">
-            Before Tuesday
+            Prayer &amp; personal notes
           </h2>
           <p className="mt-2 text-sm text-stone-600">
-            A few lines for you—saved only on this device.
+            You have already written Head, Heart, and Hands. Add a short prayer
+            and anything else you want to carry into Tuesday—saved only on this
+            device.
           </p>
           <div className="mt-6 min-h-0 flex-1 overflow-y-auto">
             <PrepareJournalFields
