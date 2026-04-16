@@ -3,10 +3,10 @@
 import Link from "next/link"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
-import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import type { WeeklyGuide } from "@/lib/weekly-guides"
 import type { PrepareHhhData } from "@/lib/prepare-hhh-storage"
-import { bibleGatewayReadUrl } from "@/lib/bible-external-link"
+import { ScriptureReader } from "@/components/bible/scripture-reader"
 import { PrepareSummaryContent } from "@/components/prepare/prepare-summary-content"
 import {
   buildPrepareFlowSteps,
@@ -43,7 +43,6 @@ export function PrepareStepFlow({
   const [index, setIndex] = useState(0)
   const { journal, setJournal } = usePrepareJournal(guide.slug)
   const { data: hhh, setPromptReply } = usePrepareHhh(guide.slug)
-  const readUrl = bibleGatewayReadUrl(guide.scripture_reference)
   const weekLabel = formatWeekLabel(guide.week_start_date)
   const step = steps[index]!
   const total = steps.length
@@ -122,7 +121,6 @@ export function PrepareStepFlow({
               guide={guide}
               step={step}
               weekLabel={weekLabel}
-              readUrl={readUrl}
               readPath={readPath}
               summaryPath={`/prepare/${guide.slug}/summary`}
               journal={journal}
@@ -181,7 +179,6 @@ function StepBody({
   guide,
   step,
   weekLabel,
-  readUrl,
   readPath,
   summaryPath,
   journal,
@@ -193,7 +190,6 @@ function StepBody({
   guide: WeeklyGuide
   step: FlowStep
   weekLabel: string
-  readUrl: string
   readPath: string
   summaryPath: string
   journal: { prayer: string; reflection: string }
@@ -245,34 +241,20 @@ function StepBody({
       )
     case "scripture":
       return (
-        <div className="flex min-h-0 flex-1 flex-col">
+        <div className="flex min-h-0 flex-1 flex-col gap-3">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-stone-500">
-            Scripture
+            Read slowly
           </p>
-          <h2 className="mt-4 font-serif text-2xl text-stone-900">
-            {guide.scripture_reference}
-          </h2>
-          <a
-            href={readUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-4 inline-flex w-fit items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-wider text-stone-800 shadow-sm transition hover:border-stone-300"
-          >
-            Open in Bible Gateway
-            <ExternalLink className="h-3.5 w-3.5 opacity-70" aria-hidden />
-          </a>
-          {step.passageText ? (
-            <div className="mt-8 min-h-0 flex-1 overflow-hidden rounded-2xl border border-stone-200/90 bg-white/70 shadow-inner">
-              <div className="max-h-[min(52dvh,28rem)] overflow-y-auto px-4 py-5 text-[1.05rem] leading-[1.75] text-stone-800">
-                {step.passageText}
-              </div>
-            </div>
-          ) : (
-            <p className="mt-8 text-sm leading-relaxed text-stone-600">
-              Read the passage in your own Bible or tap the link above. When you
-              have read slowly, continue.
-            </p>
-          )}
+          <p className="text-sm leading-relaxed text-stone-600">
+            Verse numbers, comfortable type, and a size you can adjust. If the
+            passage can&apos;t be loaded automatically, we show this week&apos;s text
+            from the guide.
+          </p>
+          <ScriptureReader
+            reference={guide.scripture_reference}
+            fallbackText={step.passageText}
+            className="min-h-0 flex-1"
+          />
         </div>
       )
     case "prompt": {

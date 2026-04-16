@@ -1,10 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { ExternalLink } from "lucide-react"
 import { useState } from "react"
 import type { WeeklyGuide } from "@/lib/weekly-guides"
-import { bibleGatewayReadUrl } from "@/lib/bible-external-link"
+import { ScriptureReader } from "@/components/bible/scripture-reader"
 import { PromptBlock } from "@/components/prepare/prompt-block"
 import {
   PrepareSectionNav,
@@ -28,7 +27,6 @@ export function WeeklyPrepareView({
   flowPath?: string
 }) {
   const weekLabel = formatWeekLabel(guide.week_start_date)
-  const readUrl = bibleGatewayReadUrl(guide.scripture_reference)
   const [journalOpen, setJournalOpen] = useState(false)
   const { journal, setJournal: setJournalSafe } = usePrepareJournal(guide.slug)
   const { data: hhh, setSection } = usePrepareHhh(guide.slug)
@@ -79,20 +77,6 @@ export function WeeklyPrepareView({
           id="prepare-passage"
           className="scroll-mt-32 sm:scroll-mt-36"
         >
-          <div className="mt-6 flex flex-wrap items-baseline justify-between gap-3">
-            <p className="font-serif text-xl text-amber-950/90">
-              {guide.scripture_reference}
-            </p>
-            <a
-              href={readUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white/90 px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-stone-700 shadow-sm transition hover:border-stone-300 hover:text-stone-900"
-            >
-              Read online
-              <ExternalLink className="h-3.5 w-3.5 opacity-70" aria-hidden />
-            </a>
-          </div>
           <p className="mt-1 text-sm text-stone-500">{weekLabel}</p>
 
           {guide.intro ? (
@@ -101,16 +85,12 @@ export function WeeklyPrepareView({
             </p>
           ) : null}
 
-          {guide.passage_text ? (
-            <blockquote
-              className={cn(
-                "mt-10 border-l-2 border-amber-900/20 pl-5",
-                "text-[1.02rem] leading-[1.75] text-stone-800"
-              )}
-            >
-              {guide.passage_text}
-            </blockquote>
-          ) : null}
+          <div className="mt-10">
+            <ScriptureReader
+              reference={guide.scripture_reference}
+              fallbackText={guide.passage_text}
+            />
+          </div>
         </div>
 
         <div className="mt-14 space-y-14">
