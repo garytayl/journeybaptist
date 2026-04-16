@@ -11,15 +11,22 @@ type Kind = keyof typeof labels
 export function PromptBlock({
   kind,
   prompts,
+  anchorId,
 }: {
   kind: Kind
   prompts: string[]
+  /** For in-page navigation (e.g. prepare-head). */
+  anchorId?: string
 }) {
   const meta = labels[kind]
   if (!prompts.length) return null
 
   return (
-    <section className="scroll-mt-24" aria-labelledby={`section-${kind}`}>
+    <section
+      id={anchorId}
+      className="scroll-mt-32 sm:scroll-mt-36"
+      aria-labelledby={`section-${kind}`}
+    >
       <div className="mb-4 border-l-2 border-amber-900/25 pl-4">
         <p
           id={`section-${kind}`}
