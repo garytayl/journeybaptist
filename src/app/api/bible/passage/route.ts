@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { coerceBibleApiTranslation } from "@/lib/bible-api-translations"
 import { normalizeBibleApiRef } from "@/lib/bible-normalize-reference"
 
 export const revalidate = 86_400
@@ -31,8 +32,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Reference too long." }, { status: 400 })
   }
 
+  const requested =
+    request.nextUrl.searchParams.get("translation") ??
+    process.env.BIBLE_TRANSLATION ??
+    "web"
+  const translation = coerceBibleApiTranslation(requested)
+
   const path = encodeURIComponent(normalized).replace(/%20/g, "+")
-  const url = `https://bible-api.com/${path}`
+  const url = `https://bible-api.com/${path}?translation=${encodeURIComponent(translation)}`
 
   try {
     const res = await fetch(url, {

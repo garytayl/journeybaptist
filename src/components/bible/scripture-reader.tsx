@@ -8,8 +8,13 @@ import {
   type CSSProperties,
 } from "react"
 import { ExternalLink, Loader2, Minus, Plus } from "lucide-react"
-import { bibleGatewayReadUrl } from "@/lib/bible-external-link"
+import { coerceBibleApiTranslation } from "@/lib/bible-api-translations"
+import { bibleGatewayReadUrl, youVersionCsbUrl } from "@/lib/bible-external-link"
 import { cn } from "@/lib/utils"
+
+const inAppTranslation = coerceBibleApiTranslation(
+  process.env.NEXT_PUBLIC_BIBLE_IN_APP_TRANSLATION
+)
 
 type Verse = { chapter: number; verse: number; text: string }
 
@@ -79,7 +84,9 @@ export function ScriptureReader({
       setData(null)
     })
 
-    fetch(`/api/bible/passage?ref=${encodeURIComponent(ref)}`)
+    const params = new URLSearchParams({ ref })
+    params.set("translation", inAppTranslation)
+    fetch(`/api/bible/passage?${params}`)
       .then(async (res) => {
         const json = (await res.json()) as PassageResponse & { error?: string }
         if (!res.ok) throw new Error(json.error || "Could not load passage.")
@@ -100,7 +107,7 @@ export function ScriptureReader({
     return () => {
       cancelled = true
     }
-  }, [reference])
+  }, [reference, inAppTranslation])
 
   const setScaleSafe = useCallback((next: FontScale) => {
     setScale(next)
@@ -121,7 +128,8 @@ export function ScriptureReader({
     [scale, setScaleSafe]
   )
 
-  const externalUrl = bibleGatewayReadUrl(reference)
+  const youVersionUrl = youVersionCsbUrl(reference)
+  const bibleGatewayCsbUrl = bibleGatewayReadUrl(reference, "CSB")
   const sizeVar = fontSteps[scale]
 
   const showFallback =
@@ -134,6 +142,36 @@ export function ScriptureReader({
         className
       )}
     >
+      <div className="border-b border-amber-200/50 bg-gradient-to-br from-amber-50/90 via-white to-[#faf8f5] px-4 py-4 sm:px-5">
+        <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-amber-900/45">
+          Christian Standard Bible (CSB)
+        </p>
+        <p className="mt-1.5 max-w-prose text-sm leading-snug text-stone-600">
+          CSB isn&apos;t licensed for our in-app API. Use YouVersion or Bible Gateway for the
+          full CSB text; the passage below is for quick reading in the app.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <a
+            href={youVersionUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-full border border-amber-200/90 bg-white px-3.5 py-2 text-xs font-semibold text-amber-950 shadow-sm transition hover:border-amber-300 hover:bg-amber-50/80"
+          >
+            Open CSB in YouVersion
+            <ExternalLink className="h-3.5 w-3.5 opacity-70" aria-hidden />
+          </a>
+          <a
+            href={bibleGatewayCsbUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white/90 px-3.5 py-2 text-xs font-medium text-stone-700 transition hover:border-stone-300 hover:text-stone-900"
+          >
+            Bible Gateway (CSB)
+            <ExternalLink className="h-3.5 w-3.5 opacity-70" aria-hidden />
+          </a>
+        </div>
+      </div>
+
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-200/70 bg-white/50 px-4 py-3 sm:px-5">
         <div className="min-w-0">
           <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-stone-400">
@@ -173,15 +211,6 @@ export function ScriptureReader({
               <Plus className="h-4 w-4" />
             </button>
           </div>
-          <a
-            href={externalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 shadow-sm transition hover:border-stone-300 hover:text-stone-900"
-          >
-            Bible Gateway
-            <ExternalLink className="h-3.5 w-3.5 opacity-70" aria-hidden />
-          </a>
         </div>
       </div>
 
@@ -239,10 +268,17 @@ export function ScriptureReader({
           <p className="py-10 text-center font-sans text-sm leading-relaxed text-stone-600">
             {error}{" "}
             <a
-              href={externalUrl}
+              href={youVersionUrl}
               className="font-medium text-amber-950 underline-offset-2 hover:underline"
             >
-              Open in Bible Gateway
+              Open CSB in YouVersion
+            </a>{" "}
+            or{" "}
+            <a
+              href={bibleGatewayCsbUrl}
+              className="font-medium text-amber-950 underline-offset-2 hover:underline"
+            >
+              Bible Gateway
             </a>
             .
           </p>
@@ -250,13 +286,13 @@ export function ScriptureReader({
       </div>
 
       <p className="border-t border-stone-200/70 bg-white/40 px-4 py-2.5 text-center font-sans text-[10px] leading-snug text-stone-400">
-        {data?.translationName === "World English Bible" || !data ? (
+        {data ? (
           <>
-            World English Bible (WEB) when loaded from the API —{" "}
-            <span className="text-stone-500">public domain</span>.
+            In-app: {data.translationName} ({String(data.translationId).toUpperCase()}) — not
+            CSB. CSB: use YouVersion or Bible Gateway above.
           </>
         ) : (
-          <>{data.translationName}. </>
+          <>In-app text uses a bible-api.com translation (default WEB), not CSB.</>
         )}{" "}
         Church-provided text may appear when the API cannot match the reference.
       </p>
